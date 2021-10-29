@@ -31,7 +31,7 @@ such that the inverse is formed by integers and a vector  of the same kind and d
 using LinearAlgebra
 using Random
 
-n = 2 # Set the dimension of your matrix
+n = 3 # Set the dimension of your matrix
 A = rand(-10:10, (n,n))
 A = UnitUpperTriangular(A)
 A = A[shuffle(1:end), :]
@@ -43,9 +43,9 @@ show(stdout, "text/plain", A)
 b=rand(-10:10, n)
 println("\n\nYour random vector is\n",b)
 
-A=[A b]
+M=[A b]
 println("\n\nYour ampliated matrix is")
-show(stdout, "text/plain", A)
+show(stdout, "text/plain", M)
 
 
 #= read matrix from file
@@ -55,24 +55,24 @@ using DelimitedFiles
 
 println("\n\nRead matrix from file")
 A=readdlm("m.txt")
-show(stdout, "text/plain", A)
+show(stdout, "text/plain", M)
 
 #= triangulate
 =#
 
-n=size(A)
+n=size(M)
 for i=1:n[2]
     for j=i+1:n[1]
-        A[j,:]=A[i,i]*A[j,:]-A[j,i]*A[i,:]
-        println("\n\nFila$j = ",A[i,i]," * Fila$j - ",A[j,i]," * Fila$i")
-        show(stdout, "text/plain", A)
+        M[j,:]=M[i,i]*M[j,:]-M[j,i]*M[i,:]
+        println("\n\nFila$j = ", M[i,i], " * Fila$j - ", M[j,i], " * Fila$i")
+        show(stdout, "text/plain", M)
     end
 end
 println("\n\nYour triangulated matrix is")
-show(stdout, "text/plain", A)
+show(stdout, "text/plain", M)
 
 
 #= print result and save to file
 =#
 
-writedlm("result.txt",A)
+writedlm("result.txt", M)
