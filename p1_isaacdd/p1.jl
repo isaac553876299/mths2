@@ -47,18 +47,15 @@ M=[A b]
 println("\n\nYour ampliated matrix is")
 show(stdout, "text/plain", M)
 
-
-#= read matrix from file
-=#
+# read matrix from file
 
 using DelimitedFiles
 
 println("\n\nRead matrix from file")
-A=readdlm("m.txt")
+M=readdlm("m.txt")
 show(stdout, "text/plain", M)
 
-#= triangulate
-=#
+# triangulate
 
 n=size(M)
 for i=1:n[2]
@@ -71,8 +68,15 @@ end
 println("\n\nYour triangulated matrix is")
 show(stdout, "text/plain", M)
 
+# backtracking
 
-#= print result and save to file
-=#
+for i=n[1]:-1:1
+    x=M[i]/M[i,i]
+    println("\n\n$x")
+end
+
+# print result and save to file
 
 writedlm("result.txt", M)
+
+# Isaac Digón Donaire
