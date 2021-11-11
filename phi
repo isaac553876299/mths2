@@ -1,0 +1,5 @@
+matriu de rotació R a partir d'una base ortonormal
+det(R'*R)=det(I) -> det(r)=±1 (-canvi orientació)
+
+
+big 8symbol number:

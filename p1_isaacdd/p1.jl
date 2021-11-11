@@ -24,8 +24,8 @@ obtenida coincide con la que nos da Julia con la operación “x=A\b”.
 
 
 #= generator.jl
-Generates a random non-singular sqaure matrix, A, of integers between -10 and 10
-such that the inverse is formed by integers and a vector  of the same kind and dimension.
+Generates a random non-singular square matrix, A, of integers between -10 and 10
+such that the inverse is formed by integers and a vector of the same kind and dimension.
 =#
 
 using LinearAlgebra
@@ -52,7 +52,7 @@ show(stdout, "text/plain", M)
 using DelimitedFiles
 
 println("\n\nRead matrix from file")
-M=readdlm("m.txt")
+A=readdlm("m.txt")
 show(stdout, "text/plain", M)
 
 # triangulate
