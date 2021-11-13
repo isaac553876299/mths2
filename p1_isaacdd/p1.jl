@@ -43,7 +43,8 @@ show(stdout, "text/plain", A)
 b=rand(-10:10, n)
 println("\n\nYour random vector is\n",b)
 
-M=[A b]
+original=[A b]
+M=original
 println("\n\nYour ampliated matrix is")
 show(stdout, "text/plain", M)
 
@@ -70,13 +71,24 @@ show(stdout, "text/plain", M)
 
 # backtracking
 
-for i=n[1]:-1:1
-    x=M[i]/M[i,i]
-    println("\n\n$x")
+println("\n\nBacktracking")
+amp=M[:,4]
+len=length(amp)
+result=zeros(len)
+result[len]=M[len,len+1]/M[len,len]
+for i=len-1:-1:1
+    for j=i:len
+        println("[ ",i," ",j," ] ",amp[i]," -= ",M[i,j]," * ",result[j])
+        amp[i]-=M[i,j]*result[j]
+    end
+    result[i]=amp[i]
 end
+println("\nresult ", result)
 
 # print result and save to file
 
+writedlm("result.txt", original)
 writedlm("result.txt", M)
+writedlm("result.txt", result)
 
 # Isaac Digón Donaire
