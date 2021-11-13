@@ -28,6 +28,8 @@ Generates a random non-singular square matrix, A, of integers between -10 and 10
 such that the inverse is formed by integers and a vector of the same kind and dimension.
 =#
 
+println("\nGeneration--------------------------------------------------")
+
 using LinearAlgebra
 using Random
 
@@ -37,7 +39,7 @@ A = UnitUpperTriangular(A)
 A = A[shuffle(1:end), :]
 A = A[:, shuffle(1:end)]
 
-println("\n\nYour random ",n," x ",n," matrix is")
+println("\nYour random ",n," x ",n," matrix is")
 show(stdout, "text/plain", A)
 
 b=rand(-10:10, n)
@@ -45,25 +47,34 @@ println("\n\nYour random vector is\n",b)
 
 original=[A b]
 M=original
-println("\n\nYour ampliated matrix is")
+println("\nYour ampliated matrix is")
 show(stdout, "text/plain", M)
 
 # read matrix from file
 
 using DelimitedFiles
-
+#=
 println("\n\nRead matrix from file")
 A=readdlm("m.txt")
 show(stdout, "text/plain", M)
+=#
+n=size(M)
+
+# calibration
+
+print("\n\nCalibration--------------------------------------------------")
+
 
 # triangulate
 
-n=size(M)
+print("\n\nTriangulation--------------------------------------------------")
 for i=1:n[2]
     for j=i+1:n[1]
-        M[j,:]=M[i,i]*M[j,:]-M[j,i]*M[i,:]
-        println("\n\nFila$j = ", M[i,i], " * Fila$j - ", M[j,i], " * Fila$i")
-        show(stdout, "text/plain", M)
+        #if M[i,i]!=0
+            println("\n\nFila$j = ", M[i,i], " * Fila$j - ", M[j,i], " * Fila$i")
+            M[j,:]=M[i,i]*M[j,:]-M[j,i]*M[i,:]
+            show(stdout, "text/plain", M)
+        #end
     end
 end
 println("\n\nYour triangulated matrix is")
@@ -71,17 +82,21 @@ show(stdout, "text/plain", M)
 
 # backtracking
 
-println("\n\nBacktracking")
+println("\n\nBacktracking--------------------------------------------------\n")
 amp=M[:,4]
 len=length(amp)
 result=zeros(len)
+print("result[$len] = ", M[len,len+1], " / ", M[len,len])
 result[len]=M[len,len+1]/M[len,len]
+println(" = ", result[len])
 for i=len-1:-1:1
+    print("result[$i] = ", amp[i])
     for j=i:len
-        println("[ ",i," ",j," ] ",amp[i]," -= ",M[i,j]," * ",result[j])
+        print(" - (", M[i,j], " * ", result[j], ")")
         amp[i]-=M[i,j]*result[j]
     end
     result[i]=amp[i]
+    println(" = ", result[i])
 end
 println("\nresult ", result)
 
