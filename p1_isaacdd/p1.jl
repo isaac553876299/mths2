@@ -53,28 +53,47 @@ show(stdout, "text/plain", M)
 # read matrix from file
 
 using DelimitedFiles
-#=
-println("\n\nRead matrix from file")
-A=readdlm("m.txt")
-show(stdout, "text/plain", M)
-=#
+
+read_from_file = false
+if read_from_file==true
+    println("\n\nRead matrix from file")
+    A=readdlm("m.txt")
+    show(stdout, "text/plain", M)
+end
+
 n=size(M)
+#println("\n n[1] = ",n[1]," n[2] = ",n[2])
 
 # calibration
 
-print("\n\nCalibration--------------------------------------------------")
-
+print("\n\nCalibration--------------------------------------------------\n\n")
+for i=1:n[1]
+    for i=1:n[1]-1
+        count_a=0
+        count_b=0
+        for j=1:n[1]
+            if M[i,j]==0 count_a+=1 end
+            if M[i+1,j]==0 count_b+=1 end
+        end
+        if count_a>count_b
+            tmp=M[i,:]
+            M[i,:]=M[i+1,:]
+            M[i+1,:]=tmp
+        end
+    end
+end
+show(stdout, "text/plain", M)
 
 # triangulate
 
 print("\n\nTriangulation--------------------------------------------------")
 for i=1:n[2]
     for j=i+1:n[1]
-        #if M[i,i]!=0
-            println("\n\nFila$j = ", M[i,i], " * Fila$j - ", M[j,i], " * Fila$i")
+        if M[i,i]!=0
+            println("\n\nFila$j = ", M[i,i], " * Fila$j - ", M[j,i], " * Fila$i\n")
             M[j,:]=M[i,i]*M[j,:]-M[j,i]*M[i,:]
             show(stdout, "text/plain", M)
-        #end
+        end
     end
 end
 println("\n\nYour triangulated matrix is")
@@ -90,13 +109,13 @@ print("result[$len] = ", M[len,len+1], " / ", M[len,len])
 result[len]=M[len,len+1]/M[len,len]
 println(" = ", result[len])
 for i=len-1:-1:1
-    print("result[$i] = ", amp[i])
-    for j=i:len
+    print("result[$i] = (", amp[i])
+    for j=len:-1:i
         print(" - (", M[i,j], " * ", result[j], ")")
         amp[i]-=M[i,j]*result[j]
     end
-    result[i]=amp[i]
-    println(" = ", result[i])
+    result[i]=amp[i]/M[i,i]
+    println(") / ",M[i,i]," = ", result[i])
 end
 println("\nresult ", result)
 
