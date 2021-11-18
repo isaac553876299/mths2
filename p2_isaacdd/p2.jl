@@ -17,7 +17,7 @@ println("\n R * k = ", R*k)
 # det(R-I)=det((R-I)')=det(R'-I')=det(R'-R'*R)=det(R'*(I-R))=det(R')*det(I-R)=det(R)*-det(R-I)
 # -> 1*-det(R-I) -> det(R-I)=-det(R-I) -> det=0
 println(" det(R) == det(R') = ", det(R))
-k=zeros(3)\(R-I)
+k=(R-I)\zeros(3)
 println("\n (R-I) * k = 0 -> k = ", k)
 # sin(phi)=-(1/2)*tr(K*R) -> K=[0 -kz ky; kz 0 -kx; -ky kx 0]
 K=[0 -k[3] k[2]; k[3] 0 -k[1]; -k[2] k[1] 0]
