@@ -1,4 +1,7 @@
-
+# eje + ángulo
+# ciertas matrices
+# R'*R==I columnas base ortonormal
+# det(R)==1 conserva orientación
 
 # eje-ángulo -> R -> eje-ángulo
 k=rand(-10:10,3);
@@ -10,8 +13,7 @@ using LinearAlgebra
 phi=pi*(1/2)
 R=I+K*sin(phi)+K*K*(1-cos(phi))
 show(stdout,"text/plain", R)
-# R'*R==I columnas base ortonormal
-# det(R)==1 conserva orientación
+
 println("\n R * k = ", R*k)
 # R*k=I*k -> (R-I)*k=0 compatible indeterminado -> resulta vector !=0 en el eje solo si det(R-I)==0
 # det(R-I)=det((R-I)')=det(R'-I')=det(R'-R'*R)=det(R'*(I-R))=det(R')*det(I-R)=det(R)*-det(R-I)
