@@ -2,6 +2,15 @@
 # ciertas matrices
 # R'*R==I columnas base ortonormal
 # det(R)==1 conserva orientación
+# invertir matriz rotación equivale a la traspuesta
+# R'=R^-1
+# R(-p,u)=R(p,u)'
+# R(p,-u)=R(p,u)'
+# R(p,u)=R(-p,-u)
+
+# R=I+sin(x)V+(1-cos(x))V^2
+# extraer V y x de R(v,x) -> V=(R-R')/2sin(x)
+# cos(x)=(-1+tr(R))/2
 
 # eje-ángulo -> R -> eje-ángulo
 k=rand(-10:10,3);
