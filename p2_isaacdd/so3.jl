@@ -1,3 +1,33 @@
+#by Isaac Digón Donaire
+
+using LinearAlgebra
+
+function r2d(x)
+    return x*pi/180
+end
+
+# first exercise
+v=[0.5;1;1]
+M=[v[1]*sin(r2d(-132)) v[2]*sin(r2d(97)) 0;
+v[1]*cos(r2d(-132)) v[2]*cos(r2d(97)) 1]
+
+# second exercise
+function to_2d(vector3d)
+    return M*vector3d
+end
+
+# third exercise
+function rotate_phi_z(v,phi)
+    z=[0;0;1]
+    K=[
+    0 -z[3] z[2];
+    z[3] 0 -z[1];
+    -z[2] z[1] 0
+    ]
+    r=(I+sin(phi)*K+(1-cos(phi))*K^2)
+    return r*v
+end
+
 # the packages we need
 using Gtk, Graphics, Logging, Printf
 
@@ -204,6 +234,7 @@ function read_normalized_label(name)
 end
 
 # the background drawing
+# fourth exercise
 function draw_the_canvas(canvas)
     h   = height(canvas)
     w   =  width(canvas)
@@ -214,34 +245,57 @@ function draw_the_canvas(canvas)
     set_source_rgb(ctx, 1, 1, 1)
     fill(ctx)
 
-    # Paint red rectangle
-    rectangle(ctx, 3w/4, 0, w/4, h/4)
-    set_source_rgb(ctx, 1, 0, 0)
-    fill(ctx)
-
-    # Paint blue rectangle
-    rectangle(ctx, 0, 3h/4, w/4, h/4)
-    set_source_rgb(ctx, 0, 0, 1)
-    fill(ctx)
-
-    # Paint an example line
-    set_line_width(ctx, 10)
-    set_source_rgb(ctx, 1, 0, 1)
-    move_to(ctx, 10, 10)
-    line_to(ctx, 100, 50)
-    stroke(ctx)
-
     # read some normalized boxes and draw a line
     phi = 5  * read_normalized_label("phi_normalized")
     v_x = 50 * read_normalized_label("v_x_normalized")
     v_y = 50 * read_normalized_label("v_y_normalized")
     v_z = 50 * read_normalized_label("v_z_normalized")
 
+    V=[v_x,v_y,v_z]
+    v=rotate_phi_z(V,phi)
+    v_v=to_2d(v)
     set_line_width(ctx, 5)
-    set_source_rgb(ctx, 1, 1, 0)
-    move_to(ctx, phi, v_x)
-    line_to(ctx, v_y, v_z)
+    set_source_rgb(ctx, 0, 0, 0)
+    move_to(ctx, 250, 250)
+    line_to(ctx, w/2+V[1],h/2-V[2])
     stroke(ctx)
+    circle(ctx, w/2+V[1],h/2-V[2], 5)
+    set_source_rgb(ctx, 0.5,0.5,0.5)
+    fill(ctx)
+
+    x=rotate_phi_z([1;0;0],phi)
+    y=rotate_phi_z([0;1;0],phi)
+    z=rotate_phi_z([0;0;1],phi)
+    vx=to_2d(x)
+    vy=to_2d(y)
+    vz=to_2d(z)
+
+    set_line_width(ctx, 5)
+    set_source_rgb(ctx, 1, 0, 0)
+    move_to(ctx, 250, 250)
+    line_to(ctx, w/2+vx[1]*100,h/2-vx[2]*100)
+    stroke(ctx)
+    circle(ctx, w/2+vx[1]*100,h/2-vx[2]*100, 5)
+    set_source_rgb(ctx, 0.5,0.5,0.5)
+    fill(ctx)
+
+    set_line_width(ctx, 5)
+    set_source_rgb(ctx, 0, 1, 0)
+    move_to(ctx, 250, 250)
+    line_to(ctx, w/2+vy[1]*100,h/2-vy[2]*100)
+    stroke(ctx)
+    circle(ctx, w/2+vy[1]*100,h/2-vy[2]*100, 5)
+    set_source_rgb(ctx, 0.5,0.5,0.5)
+    fill(ctx)
+
+    set_line_width(ctx, 5)
+    set_source_rgb(ctx, 0, 0, 1)
+    move_to(ctx, 250, 250)
+    line_to(ctx, w/2+vz[1]*100,h/2-vz[2]*100)
+    stroke(ctx)
+    circle(ctx, w/2+vz[1]*100,h/2-vz[2]*100, 5)
+    set_source_rgb(ctx, 0.5,0.5,0.5)
+    fill(ctx)
 
 end
 
