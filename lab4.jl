@@ -1,3 +1,4 @@
+
 using LinearAlgebra
 using Quaternions
 
@@ -79,89 +80,99 @@ show(stdout, "text/plain", R)
 A=[R oBa; 0 0 0 1]
 # 3.
 println()
+camera=[1;6;1]
+f=1/34
+Rz=axis_angle_to_mat([0;1;0],90*pi/180)
+Ry=axis_angle_to_mat([0;0;1],-20*pi/180)
+R=Rz*Ry
+A=[R camera; 0 0 0 1]
 using DelimitedFiles
 circle_points=readdlm("circle.txt",'	')
-Rz=axis_angle_to_mat([0;0;1],20*pi/180)
-Ry=axis_angle_to_mat([0;1;0],-90*pi/180)
-R=Rz*Ry
-f=1/34
-camera=[1;6;1]
-result=Vector{Float64}()
+points=Vector{Vector{Float64}}()
 open("circle.txt") do file
     for p in eachline(file)
-        print(p, " -> ")
         p=split(p,"	")
-        print(p, " -> ")
         p=[parse(Float64, x) for x in p]
-        println(p)
-        #p=[f*[p[1];p[2]]]*R
-        #x'=((x-xc)*(f/z))+xc
-        x=(p[1]-camera[1])*(f/p[3])+camera[1]
-        y=(p[2]-camera[2])*(f/p[3])+camera[2]
-        println(x," ",y)
-        push!(result,x)
-        push!(result,y)
+        push!(points,p)
     end
 end
-println(result)
+
 using Gtk, Graphics, Logging, Printf
 
 win = GtkWindow("lab4.3.1")
-canvas = @GtkCanvas(500,500)
+canvas = @GtkCanvas(1000,500)
 @guarded draw(canvas) do widget
     draw_the_canvas(canvas)
 end
 show(canvas)
 
 function init_window(win, canvas)
-    canvas_box = GtkBox(:v)
-    push!(canvas_box, canvas)
+    ex1 = GtkBox(:v)
+    push!(ex1, canvas)
+    push!(ex1, GtkLabel("ex1"))
+    ex2 = GtkBox(:v)
+    push!(ex2, canvas)
+    push!(ex2, GtkLabel("ex2"))
     global_box = GtkBox(:h)
-    push!(global_box, canvas_box)
+    push!(global_box, ex1)
+    push!(global_box, ex2)
     push!(win, global_box)
-end
-
-function Base.iterate(p::Vector{Float64}, i::Int=1)
-    l=length(p)
-    if l>i
-        j=mod(i,l)+1
-        return (p[i],p[j]),i+1
-    else
-        return nothing
-    end
 end
 
 function draw_the_canvas(canvas)
     h = height(canvas)
     w = width(canvas)
     ctx = getgc(canvas)
-    rectangle(ctx, 0, 0, w, h)
+    #ex1
+    rectangle(ctx, 0, 0, w/2, h)
     set_source_rgb(ctx, 1, 1, 1)
     fill(ctx)
-
-    #v_v=to_2d(v)
-    #set_line_width(ctx, 5)
-    #set_source_rgb(ctx, 0, 0, 0)
-    #move_to(ctx, 250, 250)
-    #line_to(ctx, w/2,h/2)
-    #stroke(ctx)
-    set_source_rgb(ctx, 0.75,0.25,0.25)
-    circle(ctx, 200, 200, 10)
-    fill(ctx)
-    for (x,y) in result
-        circle(ctx, x+250, y+250, 5)
-        #println(x,"<>",y)
+    set_line_width(ctx, 2)
+    move_to(ctx, 0, h/2)
+    line_to(ctx, w, h/2)
+    move_to(ctx, w/4, 0)
+    line_to(ctx, w/4, h)
+    set_source_rgb(ctx, 0, 0, 0)
+    stroke(ctx)
+    for p in points
+        pc=A*[p;1]
+        x=2000*f*pc[1]/pc[3]
+        y=2000*f*pc[2]/pc[3]
+        circle(ctx, x+w/4, y+h/2, 2)
     end
-
-    #=state = start(result)
-    while !done(result, state)
-        (x, state) = next(result, state)
-        (y, _) = next(result, state) # extract next element without update state
-        #circle(ctx, 200, 200, 10)
-    end=#
-    set_source_rgb(ctx, 0.25,0.25,0.25)
+    set_source_rgb(ctx, 0.75,0,0)
+    stroke(ctx)
+    #
+    set_line_width(ctx, 10)
+    set_source_rgb(ctx, 0, 0, 0.75)
+    move_to(ctx, w/2, 0)
+    line_to(ctx, w/2, h)
+    stroke(ctx)
+    #ex2
+    rectangle(ctx, w/2, 0, w, h)
+    set_source_rgb(ctx, 1, 1, 1)
     fill(ctx)
-
+    set_line_width(ctx, 2)
+    move_to(ctx, w/2, h/2)
+    line_to(ctx, w, h/2)
+    move_to(ctx, w*3/4, 0)
+    line_to(ctx, w*3/4, h)
+    set_source_rgb(ctx, 0, 0, 0)
+    stroke(ctx)
+    for p in points
+        pc=p
+        x=2000*f*pc[1]/pc[3]
+        y=2000*f*pc[2]/pc[3]
+        circle(ctx, x+w*3/4, y+h/2, 2)
+    end
+    set_source_rgb(ctx, 0,0.75,0)
+    stroke(ctx)
+    cx=20*camera[1]/camera[3]
+    cy=20*camera[2]/camera[3]
+    println(cx,"..",cy)
+    circle(ctx, cx+w*3/4, cy+h/2, 10)
+    set_source_rgb(ctx, 0.9,0.9,0)
+    fill(ctx)
 end
 
 init_window(win, canvas)
