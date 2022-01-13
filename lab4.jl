@@ -85,28 +85,33 @@ Rz=axis_angle_to_mat([0;0;1],20*pi/180)
 Ry=axis_angle_to_mat([0;1;0],-90*pi/180)
 R=Rz*Ry
 f=1/34
+camera=[1;6;1]
+result=Vector{Float64}()
 open("circle.txt") do file
     for p in eachline(file)
+        print(p, " -> ")
+        p=split(p,"	")
+        print(p, " -> ")
+        p=[parse(Float64, x) for x in p]
         println(p)
         #p=[f*[p[1];p[2]]]*R
-        println(p)
+        #x'=((x-xc)*(f/z))+xc
+        x=(p[1]-camera[1])*(f/p[3])+camera[1]
+        y=(p[2]-camera[2])*(f/p[3])+camera[2]
+        println(x," ",y)
+        push!(result,x)
+        push!(result,y)
     end
 end
-
+println(result)
 using Gtk, Graphics, Logging, Printf
 
 win = GtkWindow("lab4.3.1")
-
-function init_canvas(h,w)
-    c = @GtkCanvas(h,w)
-    @guarded draw(c) do widget
-        draw_the_canvas(c)
-    end
-    show(c)
-    return c
+canvas = @GtkCanvas(500,500)
+@guarded draw(canvas) do widget
+    draw_the_canvas(canvas)
 end
-
-the_canvas = init_canvas(500,500)
+show(canvas)
 
 function init_window(win, canvas)
     canvas_box = GtkBox(:v)
@@ -114,6 +119,16 @@ function init_window(win, canvas)
     global_box = GtkBox(:h)
     push!(global_box, canvas_box)
     push!(win, global_box)
+end
+
+function Base.iterate(p::Vector{Float64}, i::Int=1)
+    l=length(p)
+    if l>i
+        j=mod(i,l)+1
+        return (p[i],p[j]),i+1
+    else
+        return nothing
+    end
 end
 
 function draw_the_canvas(canvas)
@@ -125,18 +140,31 @@ function draw_the_canvas(canvas)
     fill(ctx)
 
     #v_v=to_2d(v)
-    set_line_width(ctx, 5)
-    set_source_rgb(ctx, 0, 0, 0)
-    move_to(ctx, 250, 250)
-    line_to(ctx, w/2,h/2)
-    stroke(ctx)
-    circle(ctx, w/2,h/2, 100)
-    set_source_rgb(ctx, 0.5,0.5,0.5)
+    #set_line_width(ctx, 5)
+    #set_source_rgb(ctx, 0, 0, 0)
+    #move_to(ctx, 250, 250)
+    #line_to(ctx, w/2,h/2)
+    #stroke(ctx)
+    set_source_rgb(ctx, 0.75,0.25,0.25)
+    circle(ctx, 200, 200, 10)
+    fill(ctx)
+    for (x,y) in result
+        circle(ctx, x+250, y+250, 5)
+        #println(x,"<>",y)
+    end
+
+    #=state = start(result)
+    while !done(result, state)
+        (x, state) = next(result, state)
+        (y, _) = next(result, state) # extract next element without update state
+        #circle(ctx, 200, 200, 10)
+    end=#
+    set_source_rgb(ctx, 0.25,0.25,0.25)
     fill(ctx)
 
 end
 
-init_window(win, the_canvas)
+init_window(win, canvas)
 showall(win)
 # 4.
 m=[
