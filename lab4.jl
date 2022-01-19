@@ -169,7 +169,6 @@ function draw_the_canvas(canvas)
     stroke(ctx)
     cx=20*camera[1]/camera[3]
     cy=20*camera[2]/camera[3]
-    println(cx,"..",cy)
     circle(ctx, cx+w*3/4, cy+h/2, 10)
     set_source_rgb(ctx, 0.9,0.9,0)
     fill(ctx)
@@ -186,7 +185,33 @@ a=m[:,1]
 b=m[:,2]
 c=m[:,3]
 d=m[:,4]
+ab=[a,b]
+cd=[c,d]
 oG=[4.665;3.735;-0.5395]
-a=-150*pi/180
+angle=-150*pi/180
 u=[0.01;-0.2;1]
+#=
+function intersect3(a, b)
+    da=a[2]-a[1]
+    db=b[2]-b[1]
+    dc=b[1]-a[1]
+    if dot(dc,cross(dc,db)) != 0
+        return false
+    end
+    s=dot(cross(dc,db),cross(da,db))/normalize(cross(da,db))
+    if s >= 0 && s <= 1
+        println(a[1]+da*s)
+        return true
+    end
+    return false
+end
+
+println(intersect3([a,b],[c,d]))
+=#println(intersect(ab,cd))
+
+function anglee(a, b)
+    return acosd(clamp(a⋅b/(norm(a)*norm(b)), -1, 1))
+end
+println(anglee(ab,cd))
+
 println("\nfinished")
