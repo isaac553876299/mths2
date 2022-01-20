@@ -2,6 +2,11 @@
 using LinearAlgebra, Quaternions
 using Gtk, Graphics, Logging, Printf
 
+function axis_angle_to_mat(u,θ)
+    R = cos(θ)*I + (1-cos(θ))*(u*u') + sin(θ)*[0 -u[3] u[2]; u[3] 0 -u[1]; -u[2] u[1] 0]
+    return R
+end
+
 win = GtkWindow("SO(3)")
 
 canvas = @GtkCanvas(800,600)
@@ -172,10 +177,20 @@ function read_normalized_label(name)
     return read_box(name, normalized_labels, :label)
 end
 
+function draw_circle(ctx, cx, cy, axis, angle)
+    R=axis_angle_to_mat(axis,(90*pi/180)+angle)
+    for i in 1:180
+        p=200*[cosd(2*i);sind(2*i)]
+        p=R*[p;1]
+        circle(ctx, cx + p[1], cy + p[2], 1)
+        fill(ctx)
+    end
+end
+
 function draw_the_canvas(canvas)
-    h   = height(canvas)
-    w   =  width(canvas)
-    ctx =  getgc(canvas)
+    h = height(canvas)
+    w = width(canvas)
+    ctx = getgc(canvas)
 
     rectangle(ctx, 0, 0, w, h)
     set_source_rgb(ctx, 1, 1, 1)
@@ -184,12 +199,18 @@ function draw_the_canvas(canvas)
     v_x = 50 * read_normalized_label("v_x_normalized")
     v_y = 50 * read_normalized_label("v_y_normalized")
     v_z = 50 * read_normalized_label("v_z_normalized")
+    # 50* ???
+    q_x = 50 * read_normalized_label("q_x_normalized")
+    q_y = 50 * read_normalized_label("q_y_normalized")
+    q_z = 50 * read_normalized_label("q_z_normalized")
+    q_w = 50 * read_normalized_label("q_w_normalized")
 
-    set_line_width(ctx, 5)
-    circle(ctx, w/2, h/2, 100)
-    set_source_rgb(ctx, 0.33,0.33,0.33)
-    stroke(ctx)
-
+    set_source_rgb(ctx, 1,0,0)
+    draw_circle(ctx,w/2,h/2,[1;0;0],0)
+    set_source_rgb(ctx, 0,1,0)
+    draw_circle(ctx,w/2,h/2,[0;1;0],0)
+    set_source_rgb(ctx, 0,0,1)
+    draw_circle(ctx,w/2,h/2,[0;0;1],0)
 end
 
 init_window(win, canvas)
