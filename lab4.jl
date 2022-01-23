@@ -4,6 +4,10 @@ using Quaternions
 using DelimitedFiles
 using Gtk, Graphics, Logging, Printf
 
+function axis_angle_to_mat(u,θ)
+    R = cos(θ)*I + (1-cos(θ))*(u*u') + sin(θ)*[0 -u[3] u[2]; u[3] 0 -u[1]; -u[2] u[1] 0]
+    return R
+end
 
 function ex1()
     pA=[3;4]
@@ -58,19 +62,14 @@ function ex2()
     println()
     show(stdout, "text/plain", R)
     println()
-    #A=[R oCb; 0 0 0 1]
-    #expresión afín -> w = q*w*q'+oCb
+    A=[R oCb; 0 0 0 1]
     w=[1;2;3]
-    #println(A*w)
+    println(A*[w;1])
+    #expresión afín -> w = q*w*q'+oCb
     q=Q*Quaternion(w)*conj(Q)
     println()
-    #xx=[xx.v1,xx.v2,xx.v3]+oCb
-    println(xx)
+    println([q.v1,q.v2,q.v3]+oCb)
     println()
-    function axis_angle_to_mat(u,θ)
-        R = cos(θ)*I + (1-cos(θ))*(u*u') + sin(θ)*[0 -u[3] u[2]; u[3] 0 -u[1]; -u[2] u[1] 0]
-        return R
-    end
     Rz=axis_angle_to_mat([0;0;1],-25*pi/180)
     Ry=axis_angle_to_mat([0;1;0],-145*pi/180)
     Rx=axis_angle_to_mat([1;0;0],-30*pi/180)
@@ -195,6 +194,7 @@ function ex4()
     u=[0.01;-0.2;1]
 
     #println(intersect(sab,scd))
+    #eq_ab=a+(b-a)*x
 
     function anglee(a, b)
         return acosd(clamp(dot(a,b)/(norm(a)*norm(b)), -1, 1))
