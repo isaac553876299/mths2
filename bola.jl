@@ -6,6 +6,25 @@ function axis_angle_to_mat(u,θ)
     R = cos(θ)*I + (1-cos(θ))*(u*u') + sin(θ)*[0 -u[3] u[2]; u[3] 0 -u[1]; -u[2] u[1] 0]
     return R
 end
+function quat_to_mat(q)
+    q1 = q[2]
+    q2 = q[3]
+    q3 = q[4]
+    q4 = q[1]
+    #julia takes quaternion real part first
+    #but on 2nd assignment i take it last as q[4]
+    #so for this assignment i change it to q[1]
+
+    r1 = 2 * [((q4^2)+(q1^2)), (q1*q2-q4*q3), (q1*q3+q4*q2)]
+    r1[1] -= 1
+    r2 = 2 * [(q1*q2+q4*q3), ((q4^2)+(q2^2)), (q2*q3-q4*q1)]
+    r2[2] -= 1
+    r3 = 2 * [(q1*q3-q4*q2), (q2*q3+q4*q1), ((q4^2)+(q3^2))]
+    r3[3] -= 1
+
+    R = [r1 r2 r3]'
+    return R
+end
 
 win = GtkWindow("SO(3)")
 
@@ -186,6 +205,16 @@ function draw_circle(ctx, center, axis, angle)
         circle(ctx, center[1] + p[1], center[2] + p[2], 1)
         fill(ctx)
     end
+end
+
+function reduzir(vector, scale, tras)
+    if scale==0
+        vector=normalize(vector)
+    else
+        vector=vector*scale
+    end
+    vector=vector+tras
+    return vector
 end
 
 function draw_the_canvas(canvas)

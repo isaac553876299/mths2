@@ -117,14 +117,14 @@ function ex3()
             line_to(ctx, w/2, h)
             set_source_rgb(ctx, 0, 0, 0)
             stroke(ctx)
+            set_source_rgb(ctx, 0.75,0,0)
             for p in points
                 pc=A*[p;1]
                 x=5000*f*pc[1]/pc[3]
                 y=5000*f*pc[2]/pc[3]
                 circle(ctx, x+w/2, y+h/2, 2)
+                fill(ctx)
             end
-            set_source_rgb(ctx, 0.75,0,0)
-            stroke(ctx)
         end
         showall(win_3_1)
     end
@@ -153,21 +153,45 @@ function ex3()
             line_to(ctx, w/2, h)
             set_source_rgb(ctx, 0, 0, 0)
             stroke(ctx)
+            set_source_rgb(ctx, 0,0.75,0)
             for p in points
                 pc=p
                 x=30*pc[1]
                 y=30*pc[2]
                 circle(ctx, x+w/2, y+h/2, 2)
+                fill(ctx)
             end
-            set_source_rgb(ctx, 0,0.75,0)
-            stroke(ctx)
             cx=30*camera[1]
             cy=30*camera[2]
             cam=[cx+w/2;cy+h/2]
-            circle(ctx, cam[1], cam[2], 5)
-            set_source_rgb(ctx, 0.9,0.9,0)
+            circle(ctx, cam[1], cam[2], 2)
+            set_source_rgb(ctx, 0,0,0)
             fill(ctx)
-            
+            ex=A*[50;0;0;1]
+            ey=A*[0;50;0;1]
+            ez=A*[0;0;50;1]
+            set_line_width(ctx, 2)
+            move_to(ctx, cam[1], cam[2])
+            line_to(ctx, cam[1]+1*ex[1], cam[2]+1*ex[2])
+            set_source_rgb(ctx, 1, 0, 0)
+            stroke(ctx)
+            circle(ctx, cam[1]+1*ex[1], cam[2]+1*ex[2], 2)
+            set_source_rgb(ctx, 0,0,0)
+            fill(ctx)
+            move_to(ctx, cam[1], cam[2])
+            line_to(ctx, cam[1]+1*ey[1], cam[2]+1*ey[2])
+            set_source_rgb(ctx, 0, 1, 0)
+            stroke(ctx)
+            circle(ctx, cam[1]+1*ey[1], cam[2]+1*ey[2], 2)
+            set_source_rgb(ctx, 0,0,0)
+            fill(ctx)
+            move_to(ctx, cam[1], cam[2])
+            line_to(ctx, cam[1]+1*ez[1], cam[2]+1*ez[2])
+            set_source_rgb(ctx, 0, 0, 1)
+            stroke(ctx)
+            circle(ctx,cam[1]+1*ez[1], cam[2]+1*ez[2], 2)
+            set_source_rgb(ctx, 0,0,0)
+            fill(ctx)
         end
         showall(win_3_2)
     end
@@ -184,19 +208,102 @@ function ex4()
     b=m[:,2]
     c=m[:,3]
     d=m[:,4]
-    sab=[a,b]
-    scd=[c,d]
-    oG=[4.665;3.735;-0.5395]
+    world_ab=[a,b]
+    world_cd=[c,d]
+    oGc=[4.665;3.735;-0.5395]
     angle=-150*pi/180
     u=[0.01;-0.2;1]
+    R=axis_angle_to_mat(u,angle)
+    A=[R -oGc; 0 0 0 1]#world to cam
+    camera_ab=[A*[world_ab[1];1],A*[world_ab[2];1]]
+    camera_cd=[A*[world_cd[1];1],A*[world_cd[2];1]]
+    #verify intersect
 
-    #println(intersect(sab,scd))
-    #eq_ab=a+(b-a)*x
-
-    function anglee(a, b)
-        return acosd(clamp(dot(a,b)/(norm(a)*norm(b)), -1, 1))
+    function angle_segments(a, b)
+        return acos(dot(a,b)/(norm(a)*norm(b)))
     end
-    println(anglee(sab,scd))
+    angle_world=angle_segments(world_ab,world_cd)
+    angle_camera=angle_segments(camera_ab,camera_cd)
+    println("angle (world): ",angle_world," rad == ",angle_world*180/pi," deg")
+    println("angle (camera): ",angle_camera," rad == ",angle_camera*180/pi," deg")
+    println()
+    println(world_ab,"\n",world_cd)
+    println(camera_ab,"\n",camera_cd)
+    println()
+    function draw_segment(ctx, segment, scale, offs)
+        move_to(ctx, scale*segment[1][1]+offs[1], scale*segment[1][2]+offs[2])
+        line_to(ctx, scale*segment[2][1]+offs[1], scale*segment[2][2]+offs[2])
+        stroke(ctx)
+        circle(ctx, scale*segment[1][1]+offs[1], scale*segment[1][2]+offs[2], 5)
+        circle(ctx, scale*segment[2][1]+offs[1], scale*segment[2][2]+offs[2], 5)
+        fill(ctx)
+    end
+    function ex_4_4()
+        win_4_4 = GtkWindow("lab4.4.4")
+        canvas_4_4 = @GtkCanvas(500,500)
+        @guarded draw(canvas_4_4) do widget
+            draw_4_4(canvas_4_4)
+        end
+        show(canvas_4_4)
+        box_4_4 = GtkBox(:v)
+        push!(box_4_4, GtkLabel("global view"))
+        push!(box_4_4, canvas_4_4)
+        push!(win_4_4, box_4_4)
+        function draw_4_4(canvas)
+            h = height(canvas)
+            w = width(canvas)
+            ctx = getgc(canvas)
+            rectangle(ctx, 0, 0, w, h)
+            set_source_rgb(ctx, 1, 1, 1)
+            fill(ctx)
+            set_line_width(ctx, 2)
+            move_to(ctx, 0, h/2)
+            line_to(ctx, w, h/2)
+            move_to(ctx, w/2, 0)
+            line_to(ctx, w/2, h)
+            set_source_rgb(ctx, 0, 0, 0)
+            stroke(ctx)
+            set_source_rgb(ctx, 0.75,0,0)
+            draw_segment(ctx, world_ab, 50, [w/2;h/2])
+            set_source_rgb(ctx, 0,0,0.75)
+            draw_segment(ctx, world_cd, 50, [w/2;h/2])
+        end
+        showall(win_4_4)
+    end
+    ex_4_4()
+    function ex_4_5()
+        win_4_5 = GtkWindow("lab4.4.5")
+        canvas_4_5 = @GtkCanvas(500,500)
+        @guarded draw(canvas_4_5) do widget
+            draw_4_5(canvas_4_5)
+        end
+        show(canvas_4_5)
+        box_4_5 = GtkBox(:v)
+        push!(box_4_5, GtkLabel("camera view"))
+        push!(box_4_5, canvas_4_5)
+        push!(win_4_5, box_4_5)
+        function draw_4_5(canvas)
+            h = height(canvas)
+            w = width(canvas)
+            ctx = getgc(canvas)
+            rectangle(ctx, 0, 0, w, h)
+            set_source_rgb(ctx, 1, 1, 1)
+            fill(ctx)
+            set_line_width(ctx, 2)
+            move_to(ctx, 0, h/2)
+            line_to(ctx, w, h/2)
+            move_to(ctx, w/2, 0)
+            line_to(ctx, w/2, h)
+            set_source_rgb(ctx, 0, 0, 0)
+            stroke(ctx)
+            set_source_rgb(ctx, 0.75,0,0)
+            draw_segment(ctx, camera_ab, 50, [w/2;h/2])
+            set_source_rgb(ctx, 0,0,0.75)
+            draw_segment(ctx, camera_cd, 50, [w/2;h/2])
+        end
+        showall(win_4_5)
+    end
+    ex_4_5()
 end
 
 println("\n----------ex1----------")
