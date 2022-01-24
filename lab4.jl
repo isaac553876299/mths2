@@ -16,13 +16,10 @@ function ex1()
     R=[cos(angle) -sin(angle); sin(angle) cos(angle)]
     pBa=R*pB
     A=[R (pA-pBa); 0 0 1]
-    oAb=inv(A)*[0;0;1]
-    println("oAb = $oAb")
-    oBa=A*[0;0;1]
-    println("oBa = $oBa")
+    println("oAb = ", inv(A)*[0;0;1])
+    println("oBa = ", A*[0;0;1])
     qB=[3;1]
-    qA=A*[qB;1]
-    println("qA = $qA")
+    println("qA = ", A*[qB;1])
 end
 
 function ex2()
@@ -65,22 +62,21 @@ function ex2()
     A=[R oCb; 0 0 0 1]
     w=[1;2;3]
     println(A*[w;1])
-    #expresión afín -> w = q*w*q'+oCb
-    q=Q*Quaternion(w)*conj(Q)
-    println()
-    println([q.v1,q.v2,q.v3]+oCb)
-    println()
+    println("expresión afín (C->B):")
+    println("   w = q * w * q' + oCb")
+    println("   w *= ", Quaternions.imag(Q*Quaternion(w)*conj(Q))+oCb)
     Rz=axis_angle_to_mat([0;0;1],-25*pi/180)
     Ry=axis_angle_to_mat([0;1;0],-145*pi/180)
     Rx=axis_angle_to_mat([1;0;0],-30*pi/180)
     R=Rz*Ry*Rx
     A=[R oBa; 0 0 0 1]
     A=inv(A)
+    println("matriz (C->A):")
     show(stdout, "text/plain", A)
+    println()
 end
 
 function ex3()
-    println()
     camera=[1;6;1]
     f=1/34
     Ry=axis_angle_to_mat([0;1;0],90*pi/180)
@@ -171,6 +167,7 @@ function ex3()
             circle(ctx, cam[1], cam[2], 5)
             set_source_rgb(ctx, 0.9,0.9,0)
             fill(ctx)
+            
         end
         showall(win_3_2)
     end

@@ -57,12 +57,13 @@ function normalize_q()
     q_z = read_original_box("q_z")
     q_w = read_original_box("q_w")
 
-    q = normalize(Quaternion(q_x,q_y,q_z,q_w))
+    q = Quaternion(q_w,q_x,q_y,q_z)
+    q = normalize(q)
 
-    output_normalized("q_x_normalized", q.x)
-    output_normalized("q_y_normalized", q.y)
-    output_normalized("q_z_normalized", q.z)
-    output_normalized("q_w_normalized", q.w)
+    output_normalized("q_x_normalized", q.v1)
+    output_normalized("q_y_normalized", q.v2)
+    output_normalized("q_z_normalized", q.v3)
+    output_normalized("q_w_normalized", q.s)
 end
 
 function normalize_alpha()
@@ -80,7 +81,7 @@ function entry_box_callback(widget)
     elseif name[1] == 'a'
         normalize_alpha()
     elseif name[1] == 'q'
-        normalize_quat()
+        normalize_q()
     end
 
     draw_the_canvas(the_canvas)
@@ -177,12 +178,12 @@ function read_normalized_label(name)
     return read_box(name, normalized_labels, :label)
 end
 
-function draw_circle(ctx, cx, cy, axis, angle)
+function draw_circle(ctx, center, axis, angle)
     R=axis_angle_to_mat(axis,(90*pi/180)+angle)
     for i in 1:180
         p=200*[cosd(2*i);sind(2*i)]
         p=R*[p;1]
-        circle(ctx, cx + p[1], cy + p[2], 1)
+        circle(ctx, center[1] + p[1], center[2] + p[2], 1)
         fill(ctx)
     end
 end
@@ -199,18 +200,19 @@ function draw_the_canvas(canvas)
     v_x = 50 * read_normalized_label("v_x_normalized")
     v_y = 50 * read_normalized_label("v_y_normalized")
     v_z = 50 * read_normalized_label("v_z_normalized")
-    # 50* ???
-    q_x = 50 * read_normalized_label("q_x_normalized")
-    q_y = 50 * read_normalized_label("q_y_normalized")
-    q_z = 50 * read_normalized_label("q_z_normalized")
-    q_w = 50 * read_normalized_label("q_w_normalized")
 
+    q_x = read_normalized_label("q_x_normalized")
+    q_y = read_normalized_label("q_y_normalized")
+    q_z = read_normalized_label("q_z_normalized")
+    q_w = read_normalized_label("q_w_normalized")
+
+    center = [w/2;h/2]
     set_source_rgb(ctx, 1,0,0)
-    draw_circle(ctx,w/2,h/2,[1;0;0],0)
+    draw_circle(ctx, center, [1;0;0], 0)
     set_source_rgb(ctx, 0,1,0)
-    draw_circle(ctx,w/2,h/2,[0;1;0],0)
+    draw_circle(ctx, center, [0;1;0], 0)
     set_source_rgb(ctx, 0,0,1)
-    draw_circle(ctx,w/2,h/2,[0;0;1],0)
+    draw_circle(ctx, center, [0;0;1], 0)
 end
 
 init_window(win, canvas)
