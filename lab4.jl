@@ -16,10 +16,10 @@ function ex1()
     R=[cos(angle) -sin(angle); sin(angle) cos(angle)]
     pBa=R*pB
     A=[R (pA-pBa); 0 0 1]
-    println("oAb = ", inv(A)*[0;0;1])
-    println("oBa = ", A*[0;0;1])
+    println("coordenadas origen A desde B : oAb = ", inv(A)*[0;0;1])
+    println("coordenadas origen B desde A : oBa = ", A*[0;0;1])
     qB=[3;1]
-    println("qA = ", A*[qB;1])
+    println("coordenadas punto q : qA = ", A*[qB;1])
 end
 
 function ex2()
@@ -31,9 +31,9 @@ function ex2()
 
     q=(1/7)*[-7*sqrt(3)/2;3;-1;-3/2]
     Q=Quaternion(q[1],q[2],q[3],q[4])
-    println(Q)
+    #println(Q)
     Q=normalize(Q)
-    println(Q)
+    #println(Q)
     function quat_to_mat(q)
         q1 = q[2]
         q2 = q[3]
@@ -55,15 +55,14 @@ function ex2()
     end
     rr=rotationmatrix(Q)
     R=quat_to_mat(q)
-    show(stdout, "text/plain", rr)
-    println()
-    show(stdout, "text/plain", R)
-    println()
+    #show(stdout, "text/plain", rr)
+    #println()
+    #show(stdout, "text/plain", R)
+    #println()
     A=[R oCb; 0 0 0 1]
     w=[1;2;3]
-    println(A*[w;1])
-    println("expresión afín (C->B):")
-    println("   w = q * w * q' + oCb")
+    #println(A*[w;1])
+    println("expresión afín (C->B): w = q * w * q' + oCb")
     println("   w *= ", Quaternions.imag(Q*Quaternion(w)*conj(Q))+oCb)
     Rz=axis_angle_to_mat([0;0;1],-25*pi/180)
     Ry=axis_angle_to_mat([0;1;0],-145*pi/180)
@@ -71,7 +70,7 @@ function ex2()
     R=Rz*Ry*Rx
     A=[R oBa; 0 0 0 1]
     A=inv(A)
-    println("matriz (C->A):")
+    print("\nmatriz (C->A):")
     show(stdout, "text/plain", A)
     println()
 end
@@ -214,22 +213,21 @@ function ex4()
     angle=-150*pi/180
     u=[0.01;-0.2;1]
     R=axis_angle_to_mat(u,angle)
-    A=[R -oGc; 0 0 0 1]#world to cam
+    A=[R oGc; 0 0 0 1]#world to cam
     camera_ab=[A*[world_ab[1];1],A*[world_ab[2];1]]
     camera_cd=[A*[world_cd[1];1],A*[world_cd[2];1]]
-    #verify intersect
-
+    println("verify intersect: X(TODO)")
     function angle_segments(a, b)
         return acos(dot(a,b)/(norm(a)*norm(b)))
     end
     angle_world=angle_segments(world_ab,world_cd)
     angle_camera=angle_segments(camera_ab,camera_cd)
-    println("angle (world): ",angle_world," rad == ",angle_world*180/pi," deg")
-    println("angle (camera): ",angle_camera," rad == ",angle_camera*180/pi," deg")
-    println()
-    println(world_ab,"\n",world_cd)
-    println(camera_ab,"\n",camera_cd)
-    println()
+    println("angle (world): ",angle_world," rad -> ",angle_world*180/pi," deg")
+    println("angle (camera): ",angle_camera," rad -> ",angle_camera*180/pi," deg")
+    #println()
+    #println(world_ab,"\n",world_cd)
+    #println(camera_ab,"\n",camera_cd)
+    #println()
     function draw_segment(ctx, segment, scale, offs)
         move_to(ctx, scale*segment[1][1]+offs[1], scale*segment[1][2]+offs[2])
         line_to(ctx, scale*segment[2][1]+offs[1], scale*segment[2][2]+offs[2])

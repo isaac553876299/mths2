@@ -6,6 +6,39 @@ function axis_angle_to_mat(u,θ)
     R = cos(θ)*I + (1-cos(θ))*(u*u') + sin(θ)*[0 -u[3] u[2]; u[3] 0 -u[1]; -u[2] u[1] 0]
     return R
 end
+
+function axis_angle_to_quat(u,θ)
+    q = [sin(θ/2)*u; cos(θ/2)]
+    return q
+end
+
+function mat_to_axis_angle(m)
+    θ = acos((tr(m)-1)/2)
+    sm=[m[3,2]-m[2,3]; m[1,3]-m[3,1]; m[2,1]-m[1,2]]
+    u=sm/norm(sm)
+    return u,θ
+end
+
+function mat_to_quat(m)
+    m00 = m[1, 1]
+    m11 = m[2, 2]
+    m22 = m[3, 3]
+    q = [0.0; 0.0; 0.0; 0.0]
+    q[1] = sqrt(max(0, 1+m00-m11-m22))/2;
+    q[2] = sqrt(max(0, 1-m00+m11-m22))/2;
+    q[3] = sqrt(max(0, 1-m00-m11+m22))/2;
+    q[4] = sqrt(max(0, 1+m00+m11+m22))/2;
+    return q
+end
+
+function quat_to_axis_angle(q)
+    qw = q[4]
+    θ = 2*acos(qw)
+    b = sqrt(1-qw^2)
+    u = (0.0001 > b) ? [1 0 0] : [q[1]/b q[2]/b q[3]/b]
+    return u,θ
+end
+
 function quat_to_mat(q)
     q1 = q[2]
     q2 = q[3]
@@ -26,6 +59,7 @@ function quat_to_mat(q)
     return R
 end
 
+
 win = GtkWindow("SO(3)")
 
 canvas = @GtkCanvas(800,600)
@@ -36,7 +70,13 @@ show(canvas)
 
 msg_label = GtkLabel("No message at this time")
 
-default_value = Dict("v_x" => 0, "v_y" => 0, "v_z" => 0, "alpha" => 0, "q_x" => 0, "q_y" => 0, "q_z" => 0, "q_w" => 0)
+default_value = Dict(
+"v_x" => 0, "v_y" => 0, "v_z" => 0,
+"alpha" => 0,
+"q_x" => 0, "q_y" => 0, "q_z" => 0, "q_w" => 0,
+"m11" => 0, "m12" => 0, "m13" => 0,
+"m21" => 0, "m22" => 0, "m23" => 0,
+"m31" => 0, "m32" => 0, "m33" => 0)
 
 entry_list = []
 normalized_labels = []
@@ -89,6 +129,79 @@ function normalize_alpha()
     output_normalized("alpha_normalized", read_original_box("alpha"))
 end
 
+function update_from_v()
+    normalize_v()
+    v=[
+    read_normalized_label("v_x_normalized"),
+    read_normalized_label("v_y_normalized"),
+    read_normalized_label("v_z_normalized")]
+    a=read_normalized_label("alpha_normalized")
+    q=axis_angle_to_quat(v,a)
+    q=normalize(q)
+    output_normalized("q_x_normalized", q[1])
+    output_normalized("q_y_normalized", q[2])
+    output_normalized("q_z_normalized", q[3])
+    output_normalized("q_w_normalized", q[4])
+    m=axis_angle_to_mat(v,a)
+    output_normalized("m11", m[1])
+    output_normalized("m12", m[2])
+    output_normalized("m13", m[3])
+    output_normalized("m21", m[4])
+    output_normalized("m22", m[5])
+    output_normalized("m23", m[6])
+    output_normalized("m31", m[7])
+    output_normalized("m32", m[8])
+    output_normalized("m33", m[9])
+end
+function update_from_alpha()
+    normalize_alpha()
+    a=read_normalized_label("alpha_normalized")
+    v=[
+    read_normalized_label("v_x_normalized"),
+    read_normalized_label("v_y_normalized"),
+    read_normalized_label("v_z_normalized")]
+    q=axis_angle_to_quat(v,a)
+    q=normalize(q)
+    output_normalized("q_x_normalized", q[1])
+    output_normalized("q_y_normalized", q[2])
+    output_normalized("q_z_normalized", q[3])
+    output_normalized("q_w_normalized", q[4])
+    m=axis_angle_to_mat(v,a)
+    output_normalized("m11", m[1])
+    output_normalized("m12", m[2])
+    output_normalized("m13", m[3])
+    output_normalized("m21", m[4])
+    output_normalized("m22", m[5])
+    output_normalized("m23", m[6])
+    output_normalized("m31", m[7])
+    output_normalized("m32", m[8])
+    output_normalized("m33", m[9])
+end
+function update_from_q()
+    normalize_q()
+    q=[
+    read_normalized_label("q_x_normalized"),
+    read_normalized_label("q_y_normalized"),
+    read_normalized_label("q_z_normalized"),
+    read_normalized_label("q_w_normalized")]
+    (v,a)=quat_to_axis_angle(q)
+    v=normalize(v)
+    output_normalized("v_x_normalized", v[1])
+    output_normalized("v_y_normalized", v[2])
+    output_normalized("v_z_normalized", v[3])
+    output_normalized("alpha_normalized", a)
+    m=axis_angle_to_mat(v,a)
+    output_normalized("m11", m[1])
+    output_normalized("m12", m[2])
+    output_normalized("m13", m[3])
+    output_normalized("m21", m[4])
+    output_normalized("m22", m[5])
+    output_normalized("m23", m[6])
+    output_normalized("m31", m[7])
+    output_normalized("m32", m[8])
+    output_normalized("m33", m[9])
+end
+
 function entry_box_callback(widget)
     name = get_gtk_property(widget, :name, String)
     text = get_gtk_property(widget, :text, String)
@@ -96,11 +209,11 @@ function entry_box_callback(widget)
     GAccessor.text(msg_label, name * " changed to " * text)
 
     if name[1] == 'v'
-        normalize_v()
+        update_from_v()
     elseif name[1] == 'a'
-        normalize_alpha()
+        update_from_alpha()
     elseif name[1] == 'q'
-        normalize_q()
+        update_from_q()
     end
 
     draw_the_canvas(the_canvas)
@@ -155,7 +268,7 @@ function vector_angle_box()
     return vbox
 end
 
-function quat_angle_box()
+function quat_box()
     vbox = GtkBox(:v)
     push!(vbox, bold_label("quat"))
     for label in ["q_x", "q_y", "q_z", "q_w"]
@@ -168,7 +281,7 @@ function init_window(win, canvas)
     control_box = GtkBox(:v)
     push!(control_box, vector_angle_box())
     push!(control_box, GtkLabel(""))
-    push!(control_box, quat_angle_box())
+    push!(control_box, quat_box())
     push!(control_box, GtkLabel(""))
     push!(control_box, msg_label)
 
